@@ -13,7 +13,7 @@ sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
     Counter,
-    "contracts/out/Counter.sol/Counter.json"
+    "../../contracts/out/Counter.sol/Counter.json"
 );
 
 #[tokio::main]

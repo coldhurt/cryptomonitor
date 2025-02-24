@@ -1,12 +1,8 @@
-//! Example of using the WS provider to subscribe to new blocks.
-
 use alloy::providers::{Provider, ProviderBuilder, WsConnect};
 use eyre::Result;
 use futures_util::StreamExt;
 
 use utils::get_api_url;
-
-pub mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {

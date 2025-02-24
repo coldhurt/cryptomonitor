@@ -9,9 +9,6 @@ use eyre::Result;
 use futures_util::stream::StreamExt;
 use utils::get_api_url;
 
-#[path = "../src/utils/mod.rs"]
-mod utils;
-
 #[tokio::main]
 async fn main() -> Result<()> {
   // Create the provider.

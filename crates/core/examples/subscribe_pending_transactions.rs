@@ -12,9 +12,6 @@ use eyre::Result;
 use futures_util::StreamExt;
 use utils::get_api_url;
 
-#[path = "../src/utils/mod.rs"]
-mod utils;
-
 // 定义 Uniswap 合约的 ABI
 sol! {
   // Uniswap V2 Router 的 Swap 方法

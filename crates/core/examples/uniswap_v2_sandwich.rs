@@ -14,6 +14,7 @@ use eyre::Result;
 use futures_util::StreamExt;
 use std::collections::HashMap;
 use IUniswapV2Pair::getReservesReturn;
+use utils::get_api_url;
 
 const UNISWAP_V2_ROUTER: Address = address!("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
 const UNISWAP_V2_FACTORY: Address = address!("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f");
@@ -221,10 +222,7 @@ impl<P: Provider> SandwichCalculator<P> {
     }
 }
 
-use utils::get_api_url;
 
-#[path = "../src/utils/mod.rs"]
-mod utils;
 // 使用示例
 #[tokio::main]
 async fn main() -> Result<()> {

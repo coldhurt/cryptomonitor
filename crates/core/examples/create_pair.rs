@@ -11,7 +11,7 @@ sol! {
     #[allow(missing_docs)]
     #[sol(rpc)]
     IUniswapV2Factory,
-    "abi/IUniswapV2Factory.json"
+    "../../abi/IUniswapV2Factory.json"
 }
 
 #[tokio::main]

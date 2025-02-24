@@ -9,9 +9,6 @@ use futures_util::stream::StreamExt;
 
 use utils::get_api_url;
 
-#[path = "../src/utils/mod.rs"]
-mod utils;
-
 sol! {
   event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 }
