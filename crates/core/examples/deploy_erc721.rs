@@ -2,10 +2,7 @@
 //! with it.
 
 use alloy::{
-    primitives::{
-        U256,
-        utils::{format_units, parse_units},
-    },
+    primitives::U256,
     providers::{Provider, ProviderBuilder, WsConnect},
     sol,
 };
