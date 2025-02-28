@@ -1,9 +1,8 @@
 //! Example of subscribing and listening for pending transactions in the public mempool by
 //! `WebSocket` subscription.
-
 use alloy::{
     consensus::Transaction,
-    primitives::{address, Address},
+    primitives::{Address, address},
     providers::{Provider, ProviderBuilder, WsConnect},
     sol,
     sol_types::SolCall,
@@ -78,6 +77,8 @@ async fn main() -> Result<()> {
             }
         }
     });
+
+    
 
     handle.await?;
 

@@ -1,5 +1,5 @@
 [package]
-name = "core"
+name = "monitor-core"
 
 version.workspace = true
 edition.workspace = true
