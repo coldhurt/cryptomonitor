@@ -33,7 +33,7 @@ enum Commands {
     /// Monitor token transfers
     Token {
         /// Token names
-        #[arg(short, long, default_values = ["usdt"])]
+        #[arg(short, long, default_values = ["usdt"], value_delimiter = ',')]
         tokens: Vec<String>,
     },
 }
