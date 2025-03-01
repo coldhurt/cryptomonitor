@@ -17,6 +17,10 @@ struct Cli {
     #[arg(short, long, default_value = "10")]
     count: usize,
 
+    /// Only matched transactions are output
+    #[arg(short, long, default_value_t = false)]
+    quite: bool,
+
     /// Command types
     #[command(subcommand)]
     command: Commands,
@@ -48,6 +52,13 @@ struct Config {
     dexs: Vec<String>,
     tokens: Vec<String>,
     pair_dexs: Vec<String>,
+    quite: bool,
+}
+
+fn quite_println(quite: bool, text: String) {
+    if !quite {
+        println!("{}", text);
+    }
 }
 
 #[tokio::main]
@@ -57,6 +68,7 @@ async fn main() -> Result<()> {
         dexs: vec![],
         tokens: vec![],
         pair_dexs: vec![],
+        quite: cli.quite,
     };
     match cli.command {
         Commands::Swap { dexs } => {
@@ -97,18 +109,18 @@ async fn main() -> Result<()> {
                     continue;
                 }
                 let tx = tx.unwrap();
-                println!("Tx {}", tx_hash);
+                quite_println(config.quite, format!("Tx {}", tx_hash));
 
                 if config.dexs.len() > 0 {
-                    println!("Checking if it is a dex swap");
+                    quite_println(config.quite, "Checking if it is a dex swap".to_string());
                     monitor_swaps(&tx, &config.dexs).await;
                 }
                 if config.tokens.len() > 0 {
-                    println!("Checking if it is a token transfer");
+                    quite_println(config.quite, "Checking if it is a token transfer".to_string());
                     monitor_tokens(&tx, &config.tokens).await;
                 }
                 if config.pair_dexs.len() > 0 {
-                    println!("Checking if it is a new pair");
+                    quite_println(config.quite, "Checking if it is a new pair".to_string());
                     monitor_pairs(&tx, &config.pair_dexs).await;
                 }
             }
