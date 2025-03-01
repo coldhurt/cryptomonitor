@@ -2,7 +2,7 @@ use alloy::providers::{Provider, ProviderBuilder, WsConnect};
 use eyre::Result;
 use futures_util::StreamExt;
 
-use monitor_core::{monitor_pairs, monitor_tokens};
+use monitor_core::{monitor_swaps, monitor_tokens, swap::is_valid_dexs};
 use utils::get_api_url;
 
 use clap::{Parser, Subcommand};
@@ -19,15 +19,15 @@ struct Cli {
 
     /// Command types
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand, Clone)]
 enum Commands {
-    /// Monitor new pairs
-    Pair {
+    /// Monitor dex swaps
+    Swap {
         /// Dex names
-        #[arg(short, long, default_values = ["uniswap", "sushiswap"])]
+        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3"], value_delimiter = ',')]
         dexs: Vec<String>,
     },
     /// Monitor token transfers
@@ -51,13 +51,18 @@ async fn main() -> Result<()> {
         tokens: vec![],
     };
     match cli.command {
-        Some(Commands::Pair { dexs }) => {
+        Commands::Swap { dexs } => {
             config.dexs = dexs.clone();
+            if !is_valid_dexs(&config.dexs) {
+                println!("Invalid dex names");
+                return Ok(());
+            }
+            println!("{:?}", config.dexs);
         }
-        Some(Commands::Token { tokens }) => {
+        Commands::Token { tokens } => {
             config.tokens = tokens.clone();
+            println!("{:?}", config.tokens);
         }
-        None => {},
     }
 
     let ws = WsConnect::new(get_api_url());
@@ -76,7 +81,8 @@ async fn main() -> Result<()> {
                     continue;
                 }
                 let tx = tx.unwrap();
-                monitor_pairs(&tx, &config.dexs).await;
+                println!("Tx {}", tx_hash);
+                monitor_swaps(&tx, &config.dexs).await;
                 monitor_tokens(&tx, &config.tokens).await;
             }
         }

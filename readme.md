@@ -21,9 +21,9 @@ mv ./target/release/cli .
 
 5. Monitor
 
-Monior new pairs in the 100 pending txs
+Monior swaps in the 100 pending txs
 ```bash
-./cli -c 100 pair
+./cli -c 100 swap
 ```
 
 Monior token transfers
@@ -41,9 +41,9 @@ cargo run --example deploy_erc20 -p core
 
 # Functions
 
-- [x] Monitor new pair: Uniswap(Ethereum)
+- [x] Monitor swaps: Uniswap(Ethereum), SushiSwap(Ethereum)
 - [x] Monitor token transfer: USDT, USDC, PEPE(Ethereum)
-- [ ] Monitor new pair: SuiShiSwap(Ethereum)
+- [ ] Monitor new pair: Uniswap(Ethereum), SuiShiSwap(Ethereum)
 - [ ] Monitor new pair: PancakeSwap(BSC)
 - [ ] Monitor new pair for Base network
 - [ ] Monitor new pair for Raydium, Orca on Solana
