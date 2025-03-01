@@ -41,14 +41,14 @@ cargo run --example deploy_erc20 -p core
 
 # Functions
 
-- [x] New pair monitor: Uniswap(Ethereum)
-- [x] Token Transfer: USDT, USDC, PEPE(Ethereum)
-- [ ] New pair monitor: SuiShiSwap(Ethereum)
-- [ ] New pair monitor: PancakeSwap(BSC)
-- [ ] New pair monitor for Base network
-- [ ] New pair monitor for Raydium, Orca on Solana
-- [ ] Create nft or order on OpenSea, Blur
+- [x] Monitor new pair: Uniswap(Ethereum)
+- [x] Monitor token transfer: USDT, USDC, PEPE(Ethereum)
+- [ ] Monitor new pair: SuiShiSwap(Ethereum)
+- [ ] Monitor new pair: PancakeSwap(BSC)
+- [ ] Monitor new pair for Base network
+- [ ] Monitor new pair for Raydium, Orca on Solana
+- [ ] Monitor creating nft or order on OpenSea, Blur
 - [ ] Monitor target wallet's txs
-- [ ] Token price monitor
-- [ ] Token volume monitor
+- [ ] Monitor token price
+- [ ] Monitor token volume
 - [ ] Frontend UI
