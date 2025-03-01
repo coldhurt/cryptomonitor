@@ -57,6 +57,13 @@ interface IUniswapV3Router {
 }
 }
 
+sol!(
+    #[allow(missing_docs)]
+    #[sol(rpc)]
+    UniswapV3Router,
+    "../../abi/UniswapV3Router.json"
+);
+
 // Uniswap router addresses on Ethereum mainnet
 const UNISWAP_V2_ROUTER: Address = address!("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
 const UNISWAP_V3_ROUTER: Address = address!("0xE592427A0AEce92De3Edee1F18E0157C05861564");
@@ -80,7 +87,7 @@ pub fn print_tx(tx: &TxEnvelope) {
     println!("Tx: https://etherscan.io/tx/{}", tx.tx_hash(),);
 }
 
-fn analyze_v2_transaction(dex_name: &str, inner: &TxEnvelope) {
+fn v2_swap_transaction(dex_name: &str, inner: &TxEnvelope) {
     let input = inner.input();
     let value = inner.value();
     if value.gt(&U256::from(0)) {
@@ -144,24 +151,49 @@ fn analyze_v2_transaction(dex_name: &str, inner: &TxEnvelope) {
     }
 }
 
-async fn analyze_transaction(inner: &TxEnvelope, dex_address: &Address) {
+fn uniswap_v3_swap_transaction(inner: &TxEnvelope) {
     let input = inner.input();
+    if let Ok(decoded) = UniswapV3Router::exactInputCall::abi_decode(&input, true) {
+        println!(
+            "[UniSwap V3 Swap] exactInput\nAmountIn: {:?}\nPath: {:?}",
+            decoded.params.amountIn, decoded.params.path
+        );
+        print_tx(&inner);
+        return;
+    } else if let Ok(decoded) = UniswapV3Router::exactInputSingleCall::abi_decode(&input, true) {
+        println!(
+            "[UniSwap V3 Swap] exactInputSingle\nAmountIn: {:?}\nTokenIn: {:?}\nTokenOut: {:?}",
+            decoded.params.amountIn, decoded.params.tokenIn, decoded.params.tokenOut,
+        );
+        print_tx(&inner);
+        return;
+    } else if let Ok(decoded) = UniswapV3Router::exactOutputSingleCall::abi_decode(&input, true) {
+        println!(
+            "[UniSwap V3 Swap] exactOutputSingle\namountInMaximum: {:?}\nTokenIn: {:?}\nTokenOut: {:?}",
+            decoded.params.amountInMaximum, decoded.params.tokenIn, decoded.params.tokenOut,
+        );
+        print_tx(&inner);
+        return;
+    } else if let Ok(decoded) = UniswapV3Router::exactOutputCall::abi_decode(&input, true) {
+        println!(
+            "[UniSwap V3 Swap] exactOutput\namountInMaximum: {:?}\nPath: {:?}",
+            decoded.params.amountInMaximum, decoded.params.path,
+        );
+        print_tx(&inner);
+        return;
+    } 
+}
+
+async fn analyze_transaction(inner: &TxEnvelope, dex_address: &Address) {
     match dex_address {
         &UNISWAP_V2_ROUTER => {
-            analyze_v2_transaction("UniSwap", inner);
+            v2_swap_transaction("UniSwap", inner);
         }
         &SUSHISWAP_V2_ROUTER => {
-            analyze_v2_transaction("SushiSwap", inner);
+            v2_swap_transaction("SushiSwap", inner);
         }
         &UNISWAP_V3_ROUTER => {
-            if let Ok(decoded) = IUniswapV3Router::exactInputCall::abi_decode(&input, true) {
-                println!(
-                    "[UniSwap V3 Swap]\nAmountIn: {:?}\nPath: {:?}",
-                    decoded.params.amountIn, decoded.params.path
-                );
-                print_tx(&inner);
-                return;
-            }
+            uniswap_v3_swap_transaction(inner);
         }
         _ => {}
     }

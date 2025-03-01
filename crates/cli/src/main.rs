@@ -2,7 +2,7 @@ use alloy::providers::{Provider, ProviderBuilder, WsConnect};
 use eyre::Result;
 use futures_util::StreamExt;
 
-use monitor_core::{monitor_swaps, monitor_tokens, swap::is_valid_dexs};
+use monitor_core::{monitor_pairs, monitor_swaps, monitor_tokens, swap::is_valid_dexs};
 use utils::get_api_url;
 
 use clap::{Parser, Subcommand};
@@ -30,6 +30,12 @@ enum Commands {
         #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3"], value_delimiter = ',')]
         dexs: Vec<String>,
     },
+    /// Monitor new pairs
+    Pair {
+        /// Dex names
+        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3"], value_delimiter = ',')]
+        dexs: Vec<String>,
+    },
     /// Monitor token transfers
     Token {
         /// Token names
@@ -41,6 +47,7 @@ enum Commands {
 struct Config {
     dexs: Vec<String>,
     tokens: Vec<String>,
+    pair_dexs: Vec<String>,
 }
 
 #[tokio::main]
@@ -49,6 +56,7 @@ async fn main() -> Result<()> {
     let mut config = Config {
         dexs: vec![],
         tokens: vec![],
+        pair_dexs: vec![],
     };
     match cli.command {
         Commands::Swap { dexs } => {
@@ -58,6 +66,14 @@ async fn main() -> Result<()> {
                 return Ok(());
             }
             println!("{:?}", config.dexs);
+        }
+        Commands::Pair { dexs } => {
+            config.pair_dexs = dexs.clone();
+            if !is_valid_dexs(&config.pair_dexs) {
+                println!("Invalid dex names");
+                return Ok(());
+            }
+            println!("{:?}", config.pair_dexs);
         }
         Commands::Token { tokens } => {
             config.tokens = tokens.clone();
@@ -82,8 +98,19 @@ async fn main() -> Result<()> {
                 }
                 let tx = tx.unwrap();
                 println!("Tx {}", tx_hash);
-                monitor_swaps(&tx, &config.dexs).await;
-                monitor_tokens(&tx, &config.tokens).await;
+
+                if config.dexs.len() > 0 {
+                    println!("Checking if it is a dex swap");
+                    monitor_swaps(&tx, &config.dexs).await;
+                }
+                if config.tokens.len() > 0 {
+                    println!("Checking if it is a token transfer");
+                    monitor_tokens(&tx, &config.tokens).await;
+                }
+                if config.pair_dexs.len() > 0 {
+                    println!("Checking if it is a new pair");
+                    monitor_pairs(&tx, &config.pair_dexs).await;
+                }
             }
         }
     });

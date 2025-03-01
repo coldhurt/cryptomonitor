@@ -26,6 +26,11 @@ Monior swaps in the 100 pending txs
 ./cli -c 100 swap
 ```
 
+Monior new pairs in the 100 pending txs
+```bash
+./cli -c 100 pair
+```
+
 Monior token transfers
 ```bash
 ./cli -c 100 token
@@ -43,7 +48,7 @@ cargo run --example deploy_erc20 -p core
 
 - [x] Monitor swaps: Uniswap(Ethereum), SushiSwap(Ethereum)
 - [x] Monitor token transfer: USDT, USDC, PEPE(Ethereum)
-- [ ] Monitor new pair: Uniswap(Ethereum), SuiShiSwap(Ethereum)
+- [x] Monitor new pair: Uniswap(Ethereum), SuiShiSwap(Ethereum)
 - [ ] Monitor new pair: PancakeSwap(BSC)
 - [ ] Monitor new pair for Base network
 - [ ] Monitor new pair for Raydium, Orca on Solana
