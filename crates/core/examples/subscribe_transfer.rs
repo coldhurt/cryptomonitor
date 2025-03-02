@@ -12,7 +12,7 @@ use utils::get_api_url;
 #[tokio::main]
 async fn main() -> Result<()> {
   // Create the provider.
-  let ws = WsConnect::new(get_api_url());
+  let ws = WsConnect::new(get_api_url(None));
   let provider = ProviderBuilder::new().on_ws(ws).await?;
 
   let uniswap_token_address = address!("1f9840a85d5aF5bf1D1762F925BDADdC4201F984");

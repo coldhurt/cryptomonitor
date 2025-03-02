@@ -228,7 +228,7 @@ impl<P: Provider> SandwichCalculator<P> {
 async fn main() -> Result<()> {
     // Create the provider.
 
-    let ws = WsConnect::new(get_api_url());
+    let ws = WsConnect::new(get_api_url(None));
     let provider = ProviderBuilder::new().on_ws(ws).await?;
     let provider_clone = provider.clone();
 

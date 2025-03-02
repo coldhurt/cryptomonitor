@@ -50,7 +50,7 @@ cargo run --example deploy_erc20 -p core
 - [x] Monitor token transfer: USDT, USDC, PEPE(Ethereum)
 - [x] Monitor new pair: Uniswap(Ethereum), SuiShiSwap(Ethereum)
 - [ ] Monitor new pair: PancakeSwap(BSC)
-- [ ] Monitor new pair for Base network
+- [x] Monitor new pair for Base network
 - [ ] Monitor new pair for Raydium, Orca on Solana
 - [ ] Monitor creating nft or order on OpenSea, Blur
 - [ ] Monitor target wallet's txs

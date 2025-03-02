@@ -15,7 +15,7 @@ sol! {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let ws = WsConnect::new(get_api_url());
+    let ws = WsConnect::new(get_api_url(None));
     let provider = ProviderBuilder::new().on_ws(ws).await?;
 
     let uniswap_v3_factory_address = address!("0x1F98431c8aD98523631AE4a59f267346ea31F984");

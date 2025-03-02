@@ -1,4 +1,6 @@
-use alloy::providers::{Provider, ProviderBuilder, WsConnect};
+use alloy::{
+    primitives::TxHash, providers::{Provider, ProviderBuilder, WsConnect}, rpc::types::Transaction
+};
 use eyre::Result;
 use futures_util::StreamExt;
 
@@ -20,6 +22,10 @@ struct Cli {
     /// Only matched transactions are output
     #[arg(short, long, default_value_t = false)]
     quite: bool,
+
+    /// Network name, ethereum or base
+    #[arg(short, long, default_value = "ethereum")]
+    network: String,
 
     /// Command types
     #[command(subcommand)]
@@ -43,7 +49,7 @@ enum Commands {
     /// Monitor token transfers
     Token {
         /// Token names
-        #[arg(short, long, default_values = ["usdt"], value_delimiter = ',')]
+        #[arg(short, long, default_values = ["usdt", "usdc"], value_delimiter = ',')]
         tokens: Vec<String>,
     },
 }
@@ -53,6 +59,7 @@ struct Config {
     tokens: Vec<String>,
     pair_dexs: Vec<String>,
     quite: bool,
+    network: String,
 }
 
 fn quite_println(quite: bool, text: String) {
@@ -69,11 +76,13 @@ async fn main() -> Result<()> {
         tokens: vec![],
         pair_dexs: vec![],
         quite: cli.quite,
+        network: cli.network,
     };
+    println!("Network: {}", config.network);
     match cli.command {
         Commands::Swap { dexs } => {
             config.dexs = dexs.clone();
-            if !is_valid_dexs(&config.dexs) {
+            if !is_valid_dexs(&config.network, &config.dexs) {
                 println!("Invalid dex names");
                 return Ok(());
             }
@@ -81,7 +90,7 @@ async fn main() -> Result<()> {
         }
         Commands::Pair { dexs } => {
             config.pair_dexs = dexs.clone();
-            if !is_valid_dexs(&config.pair_dexs) {
+            if !is_valid_dexs(&config.network, &config.pair_dexs) {
                 println!("Invalid dex names");
                 return Ok(());
             }
@@ -93,41 +102,78 @@ async fn main() -> Result<()> {
         }
     }
 
-    let ws = WsConnect::new(get_api_url());
+    let ws = WsConnect::new(get_api_url(Option::Some(&config.network)));
     let provider = ProviderBuilder::new().on_ws(ws).await?;
-    let sub = provider.subscribe_pending_transactions().await?;
-    // Wait and take the next transactions.
-    let mut stream = sub.into_stream().take(cli.count);
 
+    // let block_number = provider.get_block_number().await?;
+    // let block = provider.get_block(block_number).await?;
     println!("Awaiting pending transactions...");
-    // Take the stream and print the pending transaction.
-    let handle = tokio::spawn(async move {
-        while let Some(tx_hash) = stream.next().await {
-            // Get the transaction details.
-            if let Ok(tx) = provider.get_transaction_by_hash(tx_hash).await {
-                if tx.is_none() {
-                    continue;
-                }
-                let tx = tx.unwrap();
-                quite_println(config.quite, format!("Tx {}", tx_hash));
 
-                if config.dexs.len() > 0 {
-                    quite_println(config.quite, "Checking if it is a dex swap".to_string());
-                    monitor_swaps(&tx, &config.dexs).await;
+    if config.network == "base" {
+        let handle = tokio::spawn(async move {
+            let mut processed_tx_count = cli.count;
+            loop {
+                let block = provider
+                    .get_block_by_number(
+                        alloy::eips::BlockNumberOrTag::Latest,
+                        alloy::rpc::types::BlockTransactionsKind::Hashes,
+                    )
+                    .await.unwrap().unwrap();
+                
+                for tx_hash in block.transactions.as_hashes().unwrap() {
+                    processed_tx_count -= 1;
+                    if processed_tx_count == 0 {
+                        return;
+                    }
+                    if let Ok(tx) = provider.get_transaction_by_hash(TxHash::from(*tx_hash)).await {
+                        if tx.is_none() {
+                            return;
+                        }
+                        analyze_tx(&config, &tx.unwrap()).await;
+                    }
                 }
-                if config.tokens.len() > 0 {
-                    quite_println(config.quite, "Checking if it is a token transfer".to_string());
-                    monitor_tokens(&tx, &config.tokens).await;
-                }
-                if config.pair_dexs.len() > 0 {
-                    quite_println(config.quite, "Checking if it is a new pair".to_string());
-                    monitor_pairs(&tx, &config.pair_dexs).await;
+                return;
+            }
+        });
+        handle.await?;
+    } else {
+        let sub = provider.subscribe_pending_transactions().await?;
+        // Wait and take the next transactions.
+        let mut stream = sub.into_stream().take(cli.count);
+
+        // Take the stream and print the pending transaction.
+        let handle = tokio::spawn(async move {
+            while let Some(tx_hash) = stream.next().await {
+                // Get the transaction details.
+                if let Ok(tx) = provider.get_transaction_by_hash(tx_hash).await {
+                    if tx.is_none() {
+                        return;
+                    }
+                    analyze_tx(&config, &tx.unwrap()).await;
                 }
             }
-        }
-    });
-
-    handle.await?;
-
+        });
+        handle.await?;
+    }
     Ok(())
+}
+
+async fn analyze_tx(config: &Config, tx: &Transaction) {
+    quite_println(config.quite, format!("Tx {}", tx.inner.tx_hash()));
+
+    if config.dexs.len() > 0 {
+        // quite_println(config.quite, "Checking if it is a dex swap".to_string());
+        monitor_swaps(&config.network, &tx, &config.dexs).await;
+    }
+    if config.tokens.len() > 0 {
+        // quite_println(
+        //     config.quite,
+        //     "Checking if it is a token transfer".to_string(),
+        // );
+        monitor_tokens(&config.network, &tx, &config.tokens).await;
+    }
+    if config.pair_dexs.len() > 0 {
+        // quite_println(config.quite, "Checking if it is a new pair".to_string());
+        monitor_pairs(&config.network, &tx, &config.pair_dexs).await;
+    }
 }

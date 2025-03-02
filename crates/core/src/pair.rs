@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::swap::print_tx;
 
 use alloy::{
     consensus::{Transaction, TxEnvelope},
@@ -8,10 +9,10 @@ use alloy::{
 };
 
 sol!(
-  #[allow(missing_docs)]
-  #[sol(rpc)]
-  UniswapV2Factory,
-  "../../abi/UniswapV2Factory.json"
+    #[allow(missing_docs)]
+    #[sol(rpc)]
+    UniswapV2Factory,
+    "../../abi/UniswapV2Factory.json"
 );
 
 sol!(
@@ -26,16 +27,30 @@ const UNISWAP_V2_FACTORY: Address = address!("0x5C69bEe701ef814a2B6a3EDD4B1652CB
 const UNISWAP_V3_FACTORY: Address = address!("0x1F98431c8aD98523631AE4a59f267346ea31F984");
 const SUSHISWAP_V2_FACTORY: Address = address!("0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac");
 
-fn get_dex_addresses() -> HashMap<&'static str, Address> {
-    HashMap::from([
-        ("uniswap", UNISWAP_V2_FACTORY),
-        ("uniswap_v3", UNISWAP_V3_FACTORY),
-        ("sushiswap", SUSHISWAP_V2_FACTORY),
-    ])
-}
+const UNISWAP_V2_FACTORY_BASE: Address = address!("0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6");
+const UNISWAP_V3_FACTORY_BASE: Address = address!("0x33128a8fC17869897dcE68Ed026d694621f6FDfD");
 
-pub fn print_tx(tx: &TxEnvelope) {
-    println!("Tx: https://etherscan.io/tx/{}", tx.tx_hash(),);
+fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
+  let dex_addresses: HashMap<&str, HashMap<String, Address>>  = HashMap::from([
+      (
+          "ethereum",
+          HashMap::from([
+              ("uniswap".to_string(), UNISWAP_V2_FACTORY),
+              ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY),
+              ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
+          ]),
+      ),
+      (
+          "base",
+          HashMap::from([
+              ("uniswap".to_string(), UNISWAP_V2_FACTORY_BASE),
+              ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY_BASE),
+              ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
+          ]),
+      ),
+  ]);
+
+  return dex_addresses.get(network).unwrap().clone();
 }
 
 fn v2_pair_transaction(dex_name: &str, inner: &TxEnvelope) {
@@ -43,12 +58,10 @@ fn v2_pair_transaction(dex_name: &str, inner: &TxEnvelope) {
     if let Ok(decoded) = UniswapV2Factory::createPairCall::abi_decode(&input, true) {
         println!(
             "[{dex_name} V2 Swap] createPair\nTokenA: {:?}\nTokenB: {:?}",
-            decoded.tokenA,
-            decoded.tokenB,
+            decoded.tokenA, decoded.tokenB,
         );
-        print_tx(&inner);
         return;
-    } 
+    }
 }
 
 fn uniswap_v3_pair_transaction(inner: &TxEnvelope) {
@@ -58,37 +71,37 @@ fn uniswap_v3_pair_transaction(inner: &TxEnvelope) {
             "[UniSwap V3 Swap] createPool\nTokenA: {:?}\nTokenB: {:?}",
             decoded.tokenA, decoded.tokenB
         );
-        print_tx(&inner);
         return;
     }
 }
 
 async fn analyze_transaction(inner: &TxEnvelope, dex_address: &Address) {
     match dex_address {
-        &UNISWAP_V2_FACTORY => {
+        &UNISWAP_V2_FACTORY | &UNISWAP_V2_FACTORY_BASE => {
             v2_pair_transaction("UniSwap", inner);
         }
         &SUSHISWAP_V2_FACTORY => {
             v2_pair_transaction("SushiSwap", inner);
         }
-        &UNISWAP_V3_FACTORY => {
+        &UNISWAP_V3_FACTORY | &UNISWAP_V3_FACTORY_BASE => {
             uniswap_v3_pair_transaction(inner);
         }
         _ => {}
     }
 }
 
-pub async fn monitor_pairs(tx: &alloy::rpc::types::Transaction, dexs: &Vec<String>) {
+pub async fn monitor_pairs(network: &str, tx: &alloy::rpc::types::Transaction, dexs: &Vec<String>) {
     let inner = &tx.inner;
 
     let to_str: Address = inner.to().unwrap();
 
-    let dexs_address = get_dex_addresses();
+    let dexs_address = get_dex_addresses(network);
 
     for dex in dexs.iter() {
         let dex_address = dexs_address.get(dex.as_str()).unwrap();
         if to_str == *dex_address {
             analyze_transaction(inner, &dex_address).await;
+            print_tx(network, inner);
             break;
         }
     }

@@ -51,7 +51,7 @@ const TETHER: Address = address!("0xdAC17F958D2ee523a2206206994597C13D831ec7");
 async fn main() -> Result<()> {
     // Create the provider.
 
-    let ws = WsConnect::new(get_api_url());
+    let ws = WsConnect::new(get_api_url(None));
     let provider = ProviderBuilder::new().on_ws(ws).await?;
 
     // let ws = WsConnect::new("ws://localhost:8545");

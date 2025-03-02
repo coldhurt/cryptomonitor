@@ -16,7 +16,7 @@ sol!(
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let ws = WsConnect::new(get_api_url());
+    let ws = WsConnect::new(get_api_url(None));
     let provider = ProviderBuilder::new().on_ws(ws).await?;
 
     // Create a contract instance.
