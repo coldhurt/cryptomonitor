@@ -1,5 +1,9 @@
+use std::thread::sleep;
+
 use alloy::{
-    primitives::TxHash, providers::{Provider, ProviderBuilder, WsConnect}, rpc::types::Transaction
+    primitives::TxHash,
+    providers::{Provider, ProviderBuilder, WsConnect},
+    rpc::types::Transaction,
 };
 use eyre::Result;
 use futures_util::StreamExt;
@@ -57,6 +61,10 @@ enum Commands {
         /// Token names
         #[arg(short, long, default_values = ["eth"], value_delimiter = ',')]
         tokens: Vec<String>,
+
+        /// Loop duration
+        #[arg(short, long, default_value = "1000")]
+        duration: u64,
     },
 }
 
@@ -66,7 +74,7 @@ struct Config {
     pair_dexs: Vec<String>,
     quite: bool,
     network: String,
-    price_tokens: Vec<String>
+    price_tokens: Vec<String>,
 }
 
 fn quite_println(quite: bool, text: String) {
@@ -108,10 +116,12 @@ async fn main() -> Result<()> {
             config.tokens = tokens.clone();
             println!("{:?}", config.tokens);
         }
-        Commands::Price { tokens } => {
+        Commands::Price { tokens, duration } => {
             config.price_tokens = tokens.clone();
-            monitor_core::price::get_tokens_price(tokens).await;
-            return Ok(());
+            loop {
+                monitor_core::price::get_tokens_price(&tokens).await;
+                sleep(std::time::Duration::from_millis(duration));
+            }
         }
     }
 
@@ -131,14 +141,19 @@ async fn main() -> Result<()> {
                         alloy::eips::BlockNumberOrTag::Latest,
                         alloy::rpc::types::BlockTransactionsKind::Hashes,
                     )
-                    .await.unwrap().unwrap();
-                
+                    .await
+                    .unwrap()
+                    .unwrap();
+
                 for tx_hash in block.transactions.as_hashes().unwrap() {
                     processed_tx_count -= 1;
                     if processed_tx_count == 0 {
                         return;
                     }
-                    if let Ok(tx) = provider.get_transaction_by_hash(TxHash::from(*tx_hash)).await {
+                    if let Ok(tx) = provider
+                        .get_transaction_by_hash(TxHash::from(*tx_hash))
+                        .await
+                    {
                         if tx.is_none() {
                             return;
                         }

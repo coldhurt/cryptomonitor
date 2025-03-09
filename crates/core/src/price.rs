@@ -60,7 +60,7 @@ pub async fn get_token_price(token: &String) -> Result<f64> {
     }
 }
 
-pub async fn get_tokens_price(tokens: Vec<String>) {
+pub async fn get_tokens_price(tokens: &Vec<String>) {
     for token in tokens.iter() {
         let token_name = token.to_uppercase();
         let res = get_token_price(&token_name).await;
