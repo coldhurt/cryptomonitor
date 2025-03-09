@@ -37,6 +37,11 @@ Monior token transfers
 ```
 ![Demo GIF](demo.gif)
 
+Monitor token price
+```bash
+./cli price -t btc,eth,sol
+```
+
 # Test
 
 There are some other functions under development

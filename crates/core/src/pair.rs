@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::swap::print_tx;
+use std::collections::HashMap;
 
 use alloy::{
     consensus::{Transaction, TxEnvelope},
@@ -31,26 +31,26 @@ const UNISWAP_V2_FACTORY_BASE: Address = address!("0x8909Dc15e40173Ff4699343b6eB
 const UNISWAP_V3_FACTORY_BASE: Address = address!("0x33128a8fC17869897dcE68Ed026d694621f6FDfD");
 
 fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
-  let dex_addresses: HashMap<&str, HashMap<String, Address>>  = HashMap::from([
-      (
-          "ethereum",
-          HashMap::from([
-              ("uniswap".to_string(), UNISWAP_V2_FACTORY),
-              ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY),
-              ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
-          ]),
-      ),
-      (
-          "base",
-          HashMap::from([
-              ("uniswap".to_string(), UNISWAP_V2_FACTORY_BASE),
-              ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY_BASE),
-              ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
-          ]),
-      ),
-  ]);
+    let dex_addresses: HashMap<&str, HashMap<String, Address>> = HashMap::from([
+        (
+            "ethereum",
+            HashMap::from([
+                ("uniswap".to_string(), UNISWAP_V2_FACTORY),
+                ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY),
+                ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
+            ]),
+        ),
+        (
+            "base",
+            HashMap::from([
+                ("uniswap".to_string(), UNISWAP_V2_FACTORY_BASE),
+                ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY_BASE),
+                ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
+            ]),
+        ),
+    ]);
 
-  return dex_addresses.get(network).unwrap().clone();
+    return dex_addresses.get(network).unwrap().clone();
 }
 
 fn v2_pair_transaction(dex_name: &str, inner: &TxEnvelope) {
