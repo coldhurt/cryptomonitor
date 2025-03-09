@@ -4,4 +4,5 @@ pub use pair::monitor_pairs;
 
 pub mod swap;
 pub mod token;
+pub mod price;
 mod pair;

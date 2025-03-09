@@ -52,6 +52,12 @@ enum Commands {
         #[arg(short, long, default_values = ["usdt", "usdc"], value_delimiter = ',')]
         tokens: Vec<String>,
     },
+    /// Monitor token transfers
+    Price {
+        /// Token names
+        #[arg(short, long, default_values = ["eth"], value_delimiter = ',')]
+        tokens: Vec<String>,
+    },
 }
 
 struct Config {
@@ -60,6 +66,7 @@ struct Config {
     pair_dexs: Vec<String>,
     quite: bool,
     network: String,
+    price_tokens: Vec<String>
 }
 
 fn quite_println(quite: bool, text: String) {
@@ -77,6 +84,7 @@ async fn main() -> Result<()> {
         pair_dexs: vec![],
         quite: cli.quite,
         network: cli.network,
+        price_tokens: vec![],
     };
     println!("Network: {}", config.network);
     match cli.command {
@@ -99,6 +107,11 @@ async fn main() -> Result<()> {
         Commands::Token { tokens } => {
             config.tokens = tokens.clone();
             println!("{:?}", config.tokens);
+        }
+        Commands::Price { tokens } => {
+            config.price_tokens = tokens.clone();
+            monitor_core::price::get_tokens_price(tokens).await;
+            return Ok(());
         }
     }
 
