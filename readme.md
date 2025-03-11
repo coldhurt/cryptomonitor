@@ -37,9 +37,9 @@ Monior token transfers
 ```
 ![Demo GIF](demo.gif)
 
-Monitor token price
+Monitor token price, fetch data every 5 seconds
 ```bash
-./cli price -t btc,eth,sol
+./cli price -t btc,eth,sol --duration 5000
 ```
 
 # Test
