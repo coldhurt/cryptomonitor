@@ -1,7 +1,8 @@
 use std::thread::sleep;
 
 use alloy::{
-    primitives::TxHash,
+    hex,
+    primitives::{FixedBytes, TxHash},
     providers::{Provider, ProviderBuilder, WsConnect},
     rpc::types::Transaction,
 };
@@ -27,7 +28,7 @@ struct Cli {
     #[arg(short, long, default_value_t = false)]
     quite: bool,
 
-    /// Network name, ethereum or base
+    /// Network name, ethereum or base or bnb
     #[arg(short, long, default_value = "ethereum")]
     network: String,
 
@@ -41,13 +42,13 @@ enum Commands {
     /// Monitor dex swaps
     Swap {
         /// Dex names
-        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3"], value_delimiter = ',')]
+        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3", "pancake"], value_delimiter = ',')]
         dexs: Vec<String>,
     },
     /// Monitor new pairs
     Pair {
         /// Dex names
-        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3"], value_delimiter = ',')]
+        #[arg(short, long, default_values = ["uniswap", "sushiswap", "uniswap_v3", "pancake"], value_delimiter = ',')]
         dexs: Vec<String>,
     },
     /// Monitor token transfers
@@ -94,7 +95,7 @@ async fn main() -> Result<()> {
         network: cli.network,
         price_tokens: vec![],
     };
-    println!("Network: {}", config.network);
+    println!("Network: {}", config.network.to_uppercase());
     match cli.command {
         Commands::Swap { dexs } => {
             config.dexs = dexs.clone();
@@ -132,7 +133,7 @@ async fn main() -> Result<()> {
     // let block = provider.get_block(block_number).await?;
     println!("Awaiting pending transactions...");
 
-    if config.network == "base" {
+    if config.network == "base" || config.network == "bnb" {
         let handle = tokio::spawn(async move {
             let mut processed_tx_count = cli.count;
             loop {
@@ -160,6 +161,7 @@ async fn main() -> Result<()> {
                         analyze_tx(&config, &tx.unwrap()).await;
                     }
                 }
+                
                 return;
             }
         });

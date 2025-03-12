@@ -27,8 +27,16 @@ const UNISWAP_V2_FACTORY: Address = address!("0x5C69bEe701ef814a2B6a3EDD4B1652CB
 const UNISWAP_V3_FACTORY: Address = address!("0x1F98431c8aD98523631AE4a59f267346ea31F984");
 const SUSHISWAP_V2_FACTORY: Address = address!("0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac");
 
+// BASE
 const UNISWAP_V2_FACTORY_BASE: Address = address!("0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6");
 const UNISWAP_V3_FACTORY_BASE: Address = address!("0x33128a8fC17869897dcE68Ed026d694621f6FDfD");
+const SUSHISWAP_V2_FACTORY_BASE: Address = address!("0x71524B4f93c58fcbF659783284E38825f0622859");
+
+// BNB
+const UNISWAP_V2_FACTORY_BNB: Address = address!("0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6");
+const UNISWAP_V3_FACTORY_BNB: Address = address!("0xdB1d10011AD0Ff90774D0C6Bb92e5C5c8b4461F7");
+const SUSHISWAP_V2_FACTORY_BNB: Address = address!("0xc35DADB65012eC5796536bD9864eD8773aBc74C4");
+const PANCAKE_V2_FACTORY_BNB: Address = address!("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73");
 
 fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
     let dex_addresses: HashMap<&str, HashMap<String, Address>> = HashMap::from([
@@ -45,7 +53,16 @@ fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
             HashMap::from([
                 ("uniswap".to_string(), UNISWAP_V2_FACTORY_BASE),
                 ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY_BASE),
-                ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY),
+                ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY_BASE),
+            ]),
+        ),
+        (
+            "bnb",
+            HashMap::from([
+                ("uniswap".to_string(), UNISWAP_V2_FACTORY_BNB),
+                ("uniswap_v3".to_string(), UNISWAP_V3_FACTORY_BNB),
+                ("sushiswap".to_string(), SUSHISWAP_V2_FACTORY_BNB),
+                ("pancake".to_string(), PANCAKE_V2_FACTORY_BNB),
             ]),
         ),
     ]);

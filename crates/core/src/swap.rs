@@ -7,55 +7,49 @@ use alloy::{
     sol_types::SolCall,
 };
 
-sol! {
-// Uniswap V2 Router
-interface IUniswapV2Router {
-    function swapExactTokensForTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] path,
-        address to,
-        uint256 deadline
-    ) external;
-    function swapTokensForExactTokens(
-        uint amountOut,
-        uint amountInMax,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
-    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
-        external
-        returns (uint[] memory amounts);
-    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
-        external
-        returns (uint[] memory amounts);
-    function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
-        external
-        payable
-        returns (uint[] memory amounts);
-    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
-        external
-        virtual
-        override
-        payable
-        ensure(deadline)
-        returns (uint[] memory amounts);
-}
+sol!(
+    #[allow(missing_docs)]
+    #[sol(rpc)]
+    IUniswapV2Router,
+    "../../abi/UniswapV2Router.json"
+);
 
-// Uniswap V3 Router
-interface IUniswapV3Router {
-    struct ExactInputParams {
-        bytes path;
-        address recipient;
-        uint256 deadline;
-        uint256 amountIn;
-        uint256 amountOutMinimum;
-    }
-
-    function exactInput(ExactInputParams calldata params) external payable;
-}
-}
+// sol! {
+// // Uniswap V2 Router
+// interface IUniswapV2Router {
+//     function swapExactTokensForTokens(
+//         uint256 amountIn,
+//         uint256 amountOutMin,
+//         address[] path,
+//         address to,
+//         uint256 deadline
+//     ) external;
+//     function swapTokensForExactTokens(
+//         uint amountOut,
+//         uint amountInMax,
+//         address[] calldata path,
+//         address to,
+//         uint deadline
+//     ) external returns (uint[] memory amounts);
+//     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
+//         external
+//         returns (uint[] memory amounts);
+//     function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+//         external
+//         returns (uint[] memory amounts);
+//     function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+//         external
+//         payable
+//         returns (uint[] memory amounts);
+//     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+//         external
+//         virtual
+//         override
+//         payable
+//         ensure(deadline)
+//         returns (uint[] memory amounts);
+// }
+// }
 
 sol!(
     #[allow(missing_docs)]
@@ -67,10 +61,20 @@ sol!(
 // Uniswap router addresses on Ethereum mainnet
 const UNISWAP_V2_ROUTER: Address = address!("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
 const UNISWAP_V3_ROUTER: Address = address!("0xE592427A0AEce92De3Edee1F18E0157C05861564");
-const SUSHISWAP_V2_ROUTER: Address = address!("0x85CD07Ea01423b1E937929B44E4Ad8c40BbB5E71");
+const SUSHISWAP_V2_ROUTER: Address = address!("0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F");
+const PANCAKE_V2_ROUTER: Address = address!("0xEfF92A263d31888d860bD50809A8D171709b7b1c");
 
+// Base l2
 const UNISWAP_V2_ROUTER_BASE: Address = address!("0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24");
 const UNISWAP_V3_ROUTER_BASE: Address = address!("0x2626664c2603336E57B271c5C0b26F421741e481");
+const SUSHISWAP_V2_ROUTER_BASE: Address = address!("0x6BDED42c6DA8FBf0d2bA55B2fa120C5e0c8D7891");
+const PANCAKE_V2_ROUTER_BASE: Address = address!("0x8cFe327CEc66d1C090Dd72bd0FF11d690C33a2Eb");
+
+// BNB
+const UNISWAP_V2_ROUTER_BNB: Address = address!("0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24");
+const UNISWAP_V3_ROUTER_BNB: Address = address!("0xB971eF87ede563556b2ED4b1C0b0019111Dd85d2");
+const SUSHISWAP_V2_ROUTER_BNB: Address = address!("0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506");
+const PANCAKE_V2_ROUTER_BNB: Address = address!("0x10ED43C718714eb63d5aA57B78B54704E256024E");
 
 fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
     let dex_addresses: HashMap<&str, HashMap<String, Address>> = HashMap::from([
@@ -80,6 +84,7 @@ fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
                 ("uniswap".to_string(), UNISWAP_V2_ROUTER),
                 ("uniswap_v3".to_string(), UNISWAP_V3_ROUTER),
                 ("sushiswap".to_string(), SUSHISWAP_V2_ROUTER),
+                ("pancake".to_string(), PANCAKE_V2_ROUTER),
             ]),
         ),
         (
@@ -87,7 +92,17 @@ fn get_dex_addresses(network: &str) -> HashMap<String, Address> {
             HashMap::from([
                 ("uniswap".to_string(), UNISWAP_V2_ROUTER_BASE),
                 ("uniswap_v3".to_string(), UNISWAP_V3_ROUTER_BASE),
-                ("sushiswap".to_string(), SUSHISWAP_V2_ROUTER),
+                ("sushiswap".to_string(), SUSHISWAP_V2_ROUTER_BASE),
+                ("pancake".to_string(), PANCAKE_V2_ROUTER_BASE),
+            ]),
+        ),
+        (
+            "bnb",
+            HashMap::from([
+                ("uniswap".to_string(), UNISWAP_V2_ROUTER_BNB),
+                ("uniswap_v3".to_string(), UNISWAP_V3_ROUTER_BNB),
+                ("sushiswap".to_string(), SUSHISWAP_V2_ROUTER_BNB),
+                ("pancake".to_string(), PANCAKE_V2_ROUTER_BNB),
             ]),
         ),
     ]);
@@ -105,6 +120,7 @@ pub fn print_tx(network: &str, tx: &TxEnvelope) {
     let explorer_domains = HashMap::from([
         ("ethereum", "https://etherscan.io/tx/"),
         ("base", "https://basescan.org/tx/"),
+        ("bnb", "https://bscscan.com/tx/"),
     ]);
     println!(
         "Tx: {}{}",
@@ -166,6 +182,36 @@ fn v2_swap_transaction(dex_name: &str, inner: &TxEnvelope) {
         println!(
             "[{dex_name} V2 Swap] swapTokensForExactETHCall\namountInMax: {:?}\nPath: {:?}",
             decoded.amountInMax, decoded.path
+        );
+        return;
+    } else if let Ok(decoded) =
+        IUniswapV2Router::swapExactETHForTokensSupportingFeeOnTransferTokensCall::abi_decode(
+            &input, true,
+        )
+    {
+        println!(
+            "[{dex_name} V2 Swap] swapExactETHForTokensSupportingFeeOnTransferTokensCall\namountOutMin: {:?}\nPath: {:?}",
+            decoded.amountOutMin, decoded.path
+        );
+        return;
+    } else if let Ok(decoded) =
+        IUniswapV2Router::swapExactTokensForETHSupportingFeeOnTransferTokensCall::abi_decode(
+            &input, true,
+        )
+    {
+        println!(
+            "[{dex_name} V2 Swap] swapExactTokensForETHSupportingFeeOnTransferTokensCall\namountOutMin: {:?}\nPath: {:?}",
+            decoded.amountOutMin, decoded.path
+        );
+        return;
+    } else if let Ok(decoded) =
+        IUniswapV2Router::swapExactTokensForTokensSupportingFeeOnTransferTokensCall::abi_decode(
+            &input, true,
+        )
+    {
+        println!(
+            "[{dex_name} V2 Swap] swapExactTokensForTokensSupportingFeeOnTransferTokensCall\namountOutMin: {:?}\nPath: {:?}",
+            decoded.amountOutMin, decoded.path
         );
         return;
     }

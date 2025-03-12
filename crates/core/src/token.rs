@@ -21,6 +21,9 @@ const PEPE: Address = address!("0x6982508145454ce325ddbe47a25d4ec3d2311933");
 const TETHER_BASE: Address = address!("0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2");
 const USDC_BASE: Address = address!("0x833589fcd6edb6e08f4c7c32d4f71b54bda02913");
 
+const TETHER_BNB: Address = address!("0x55d398326f99059ff775485246999027b3197955");
+const USDC_BNB: Address = address!("0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d");
+
 fn get_token_addresses(network: &str) -> HashMap<String, (Address, u8)> {
     let token_addresses: HashMap<&str, HashMap<String, (Address, u8)>> = HashMap::from([
         (
@@ -36,6 +39,13 @@ fn get_token_addresses(network: &str) -> HashMap<String, (Address, u8)> {
             HashMap::from([
                 ("usdt".to_string(), (TETHER_BASE, 6)),
                 ("usdc".to_string(), (USDC_BASE, 6)),
+            ]),
+        ),
+        (
+            "bnb",
+            HashMap::from([
+                ("usdt".to_string(), (TETHER_BNB, 18)),
+                ("usdc".to_string(), (USDC_BNB, 18)),
             ]),
         ),
     ]);
