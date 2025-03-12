@@ -14,43 +14,6 @@ sol!(
     "../../abi/UniswapV2Router.json"
 );
 
-// sol! {
-// // Uniswap V2 Router
-// interface IUniswapV2Router {
-//     function swapExactTokensForTokens(
-//         uint256 amountIn,
-//         uint256 amountOutMin,
-//         address[] path,
-//         address to,
-//         uint256 deadline
-//     ) external;
-//     function swapTokensForExactTokens(
-//         uint amountOut,
-//         uint amountInMax,
-//         address[] calldata path,
-//         address to,
-//         uint deadline
-//     ) external returns (uint[] memory amounts);
-//     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
-//         external
-//         returns (uint[] memory amounts);
-//     function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
-//         external
-//         returns (uint[] memory amounts);
-//     function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
-//         external
-//         payable
-//         returns (uint[] memory amounts);
-//     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
-//         external
-//         virtual
-//         override
-//         payable
-//         ensure(deadline)
-//         returns (uint[] memory amounts);
-// }
-// }
-
 sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
@@ -251,10 +214,13 @@ async fn analyze_transaction(inner: &TxEnvelope, dex_address: &Address) {
         &UNISWAP_V2_ROUTER | &UNISWAP_V2_ROUTER_BASE => {
             v2_swap_transaction("UniSwap", inner);
         }
-        &SUSHISWAP_V2_ROUTER => {
+        &SUSHISWAP_V2_ROUTER | &SUSHISWAP_V2_ROUTER_BASE | &SUSHISWAP_V2_ROUTER_BNB => {
             v2_swap_transaction("SushiSwap", inner);
         }
-        &UNISWAP_V3_ROUTER | &UNISWAP_V3_ROUTER_BASE => {
+        &PANCAKE_V2_ROUTER | &PANCAKE_V2_ROUTER_BASE | &PANCAKE_V2_ROUTER_BNB => {
+            v2_swap_transaction("PancakeSwap", inner);
+        }
+        &UNISWAP_V3_ROUTER | &UNISWAP_V3_ROUTER_BASE | &UNISWAP_V3_ROUTER_BNB => {
             uniswap_v3_swap_transaction(inner);
         }
         _ => {}

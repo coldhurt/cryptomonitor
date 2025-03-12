@@ -100,6 +100,9 @@ async fn analyze_transaction(inner: &TxEnvelope, dex_address: &Address) {
         &SUSHISWAP_V2_FACTORY => {
             v2_pair_transaction("SushiSwap", inner);
         }
+        &PANCAKE_V2_FACTORY_BNB => {
+            v2_pair_transaction("PancakeSwap", inner);
+        }
         &UNISWAP_V3_FACTORY | &UNISWAP_V3_FACTORY_BASE => {
             uniswap_v3_pair_transaction(inner);
         }

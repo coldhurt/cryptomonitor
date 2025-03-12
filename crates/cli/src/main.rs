@@ -1,8 +1,7 @@
 use std::thread::sleep;
 
 use alloy::{
-    hex,
-    primitives::{FixedBytes, TxHash},
+    primitives::TxHash,
     providers::{Provider, ProviderBuilder, WsConnect},
     rpc::types::Transaction,
 };
@@ -161,7 +160,7 @@ async fn main() -> Result<()> {
                         analyze_tx(&config, &tx.unwrap()).await;
                     }
                 }
-                
+
                 return;
             }
         });
