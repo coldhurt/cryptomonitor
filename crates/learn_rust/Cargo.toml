@@ -22,3 +22,4 @@ tokio = { workspace = true }
 clap = { workspace = true }
 reqwest = { workspace = true }
 utils = { workspace = true }
+redis = { version = "0.29.1", features = [ "tokio-comp" ] }
