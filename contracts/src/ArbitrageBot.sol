@@ -22,12 +22,12 @@ contract ArbitrageBot {
     
     function checkProfitability(
         address tokenA, 
-        address tokenB, 
+        address tokenB,
         uint256 amountIn
     ) public view returns (bool profitable, uint256 profit) {
         uint256 amountOutDex1 = getAmountOut(dex1, tokenA, tokenB, amountIn);
         uint256 amountOutDex2 = getAmountOut(dex2, tokenB, tokenA, amountOutDex1);
-        
+
         if (amountOutDex2 > amountIn) {
             return (true, amountOutDex2 - amountIn);
         } else {
@@ -53,10 +53,10 @@ contract ArbitrageBot {
     
     function getAmountOut(
         IUniswapV2Router02 dex, 
-        address tokenIn, 
+        address tokenIn,
         address tokenOut, 
         uint256 amountIn
-    ) internal view returns (uint256) {
+    ) public view returns (uint256) {
         address[] memory path = new address[](2);
         path[0] = tokenIn;
         path[1] = tokenOut;

@@ -3,16 +3,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface IUniswapV2Router {
-    function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
-}
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract SwapTestScript is Script {
     // Uniswap V2 Router Address (以太坊主网，测试用需换成Anvil环境)
@@ -23,34 +14,28 @@ contract SwapTestScript is Script {
     address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 
     function run() external {
-        // 读取私钥
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
-
-        // 从私钥推导出地址
         address derivedAddress = vm.addr(privateKey);
-
-        // 输出地址
         console.log("Derived Address:", derivedAddress);
         vm.startBroadcast(privateKey);
 
-        IUniswapV2Router uniswap = IUniswapV2Router(UNISWAP_V2_ROUTER);
-        IERC20(WETH).approve(UNISWAP_V2_ROUTER, type(uint256).max);
+        IUniswapV2Router02 uniswap = IUniswapV2Router02(UNISWAP_V2_ROUTER);
 
-        address[] memory path;
+        address[] memory path = new address[](2);
         path[0] = WETH;
         path[1] = USDT;
+        
+        uniswap.swapExactETHForTokens{value: 1 ether}(
+            0,              // 最小接受 USDT 数量
+            path,
+            msg.sender,     // 收款地址
+            block.timestamp + 60 // 交易截止时间
+        );
 
-        // uniswap.swapExactTokensForTokens(
-        //     1 ether,        // 1 WETH
-        //     0,              // 最小接受 USDC 数量
-        //     path,
-        //     msg.sender,     // 收款地址
-        //     block.timestamp + 60 // 交易截止时间
-        // );
-
+        // IERC20(WETH).approve(UNISWAP_V2_ROUTER, type(uint256).max);
         uint256 balanceOfUsdt = IERC20(USDT).balanceOf(derivedAddress); 
 
-        console.log("USDT balance ", balanceOfUsdt);
+        console.log("USDT balance ", balanceOfUsdt / 10**6);
 
         vm.stopBroadcast();
     }
