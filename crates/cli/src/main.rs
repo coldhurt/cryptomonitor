@@ -1,7 +1,7 @@
-use std::thread::sleep;
+use std::{str::FromStr, thread::sleep};
 
 use alloy::{
-    primitives::TxHash,
+    primitives::{Address, TxHash},
     providers::{Provider, ProviderBuilder, WsConnect},
     rpc::types::Transaction,
 };
@@ -9,7 +9,7 @@ use eyre::Result;
 use futures_util::StreamExt;
 
 use monitor_core::{monitor_pairs, monitor_swaps, monitor_tokens, swap::is_valid_dexs};
-use utils::get_api_url;
+use utils::{get_api_url, get_local_url};
 
 use clap::{Parser, Subcommand};
 
@@ -26,6 +26,10 @@ struct Cli {
     /// Only matched transactions are output
     #[arg(short, long, default_value_t = false)]
     quite: bool,
+
+    /// If this enable this, it will use LOCAL_URL
+    #[arg(short, long, default_value_t = false)]
+    local_url: bool,
 
     /// Network name, ethereum or base or bnb
     #[arg(short, long, default_value = "ethereum")]
@@ -66,6 +70,12 @@ enum Commands {
         #[arg(short, long, default_value = "1000")]
         duration: u64,
     },
+    /// Monitor target wallet
+    Wallet {
+        /// Wallet address
+        #[arg(short, long)]
+        wallet_address: String,
+    },
 }
 
 struct Config {
@@ -73,8 +83,10 @@ struct Config {
     tokens: Vec<String>,
     pair_dexs: Vec<String>,
     quite: bool,
+    local_url: bool,
     network: String,
     price_tokens: Vec<String>,
+    wallet_address: Option<Address>,
 }
 
 fn quite_println(quite: bool, text: String) {
@@ -92,7 +104,9 @@ async fn main() -> Result<()> {
         pair_dexs: vec![],
         quite: cli.quite,
         network: cli.network,
+        local_url: cli.local_url,
         price_tokens: vec![],
+        wallet_address: None,
     };
     println!("Network: {}", config.network.to_uppercase());
     match cli.command {
@@ -123,9 +137,16 @@ async fn main() -> Result<()> {
                 sleep(std::time::Duration::from_millis(duration));
             }
         }
+        Commands::Wallet { wallet_address } => {
+            config.wallet_address = Some(Address::from_str(&wallet_address).unwrap());
+        }
     }
 
-    let ws = WsConnect::new(get_api_url(Option::Some(&config.network)));
+    let ws = WsConnect::new(if config.local_url {
+        get_local_url()
+    } else {
+        get_api_url(Option::Some(&config.network))
+    });
     let provider = ProviderBuilder::new().on_ws(ws).await?;
 
     // let block_number = provider.get_block_number().await?;
@@ -189,6 +210,10 @@ async fn main() -> Result<()> {
 
 async fn analyze_tx(config: &Config, tx: &Transaction) {
     quite_println(config.quite, format!("Tx {}", tx.inner.tx_hash()));
+
+    if let Some(wallet_address) = config.wallet_address {
+        if tx.from == wallet_address {}
+    }
 
     if config.dexs.len() > 0 {
         // quite_println(config.quite, "Checking if it is a dex swap".to_string());

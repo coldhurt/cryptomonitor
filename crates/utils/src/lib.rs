@@ -20,15 +20,23 @@ fn get_bnb_api_url() -> String {
     bnb_url
 }
 
+pub fn get_local_url() -> String {
+    dotenv().ok(); // Load .env file
+    println!("Use LOCAL_URL");
+    env::var("LOCAL_URL").expect("LOCAL_URL not set")
+}
+
 pub fn get_api_url(network: Option<&str>) -> String {
     let network = network.unwrap_or("ethereum");
     dotenv().ok(); // Load .env file
+    
     let api_key = env::var("API_KEY").expect("API_KEY not set");
     let prefix = get_api_prefix(network);
     // Create the provider.
     let mut rpc_url = format!("wss://{}.g.alchemy.com/v2/{}", prefix, api_key);
-    if network == "bnb" {
+    if network == "bnb" && get_bnb_api_url() != "" {
         rpc_url = get_bnb_api_url();
     }
+
     rpc_url
 }
